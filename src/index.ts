@@ -36,10 +36,26 @@ wsServer.on('connection', (ws: WebSocket) => {
   console.log('New WebSocket connection established.')
 
   // Listen for messages from the client
-  ws.on('message', (message) => {
-    console.log('Received Message:', message.toString())
+  ws.on('message', async (message) => {
+    // Added async here
+    var data = {
+      conversationId: 'Long',
+      payload: {
+        type: 'text',
+        text: message.toString()
+      }
+    }
 
-    // Send back a message to the client
+    // Handle Send Message to Chat box
+    console.log('Received Message:', data)
+
+    // Function to delay for a specified time (in milliseconds)
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+    // Await for 10 seconds
+    await delay(2000) // 10 seconds = 10000 ms
+
+    // Send back a message to the client after the delay
     ws.send(`Server received: ${message.toString()}`)
   })
 
