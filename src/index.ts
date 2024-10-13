@@ -1,5 +1,5 @@
 import express, { Request, Response, Application } from 'express'
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 import { create } from 'lodash'
 import { createMessage } from '@botpress/chat/dist/gen/client'
 import { send } from 'process'
@@ -49,63 +49,55 @@ wsServer.on('connection', (ws: WebSocket) => {
   })
 })
 
+const BASE_URL = process.env.BASE_URL
+const AUTH_TOKEN = process.env.AUTH_TOKEN
+const USER_KEY = process.env.USER_KEY
+
+const headers = {
+  accept: 'application/json',
+  Authorization: AUTH_TOKEN,
+  'x-user-key': USER_KEY,
+  'content-type': 'application/json'
+}
+
+const createAxiosConfig = (method: string, url: string, data?: any): AxiosRequestConfig => ({
+  method,
+  url: `${BASE_URL}${url}`,
+  headers,
+  data
+})
+
+const handleAxiosError = (error: any, res: Response) => {
+  console.error('Axios error:', error.message)
+  res.status(500).json({ error: error.message })
+}
+
 app.post('/chatAuto', async (req: Request, res: Response) => {
-  await axios.request({
-    method: 'POST',
-    url: 'https://chat.botpress.cloud/cc72f54c-2498-4da9-ab75-5a98365f7b06/messages',
-    headers: {
-      accept: 'application/json',
-      Authorization: 'Bearer bp_pat_sIVe99KsGHaSc6ovXixwnR4SOlhr8cqMMJaH',
-      'x-user-key':
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkRvYW5oIiwiaWF0IjoxNzI4NDkxMjgwfQ.kLnk-KG44kMIPphXzZlW3ooruEXZmk23t_UVbKVsy_E',
-      'content-type': 'application/json'
-    },
-    data: req.body
-  })
+  try {
+    // Send message
+    await axios(createAxiosConfig('POST', '/messages', req.body))
 
-  const listMess = {
-    method: 'GET',
-    url: 'https://chat.botpress.cloud/cc72f54c-2498-4da9-ab75-5a98365f7b06/conversations/Long/messages',
-    headers: {
-      accept: 'application/json',
-      Authorization: 'Bearer bp_pat_sIVe99KsGHaSc6ovXixwnR4SOlhr8cqMMJaH',
-      'x-user-key':
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkRvYW5oIiwiaWF0IjoxNzI4NDkxMjgwfQ.kLnk-KG44kMIPphXzZlW3ooruEXZmk23t_UVbKVsy_E',
-      'content-type': 'application/json'
-    }
-  }
+    // Get initial message count
+    const initialResponse = await axios(createAxiosConfig('GET', '/conversations/Long/messages'))
+    const initialMessageCount = initialResponse.data.messages.length
 
-  const oldLength = await axios
-    .request(listMess)
-    .then(function (response) {
-      return response.data.messages.length
-    })
-    .catch(function (error) {
-      console.error(error)
-      return res.json({
-        error: error.message
-      })
-    })
-
-  const intervalId = await setInterval(async () => {
-    await axios
-      .request(listMess)
-      .then(function (response) {
-        // return response.data.messages.length
-        if (response.data.messages.length > oldLength) {
-          clearInterval(intervalId) // Ngừng kiểm tra
-          return res.json({
-            result: response.data
-          })
+    // Poll for new messages
+    const pollForNewMessages = async () => {
+      try {
+        const response = await axios(createAxiosConfig('GET', '/conversations/Long/messages'))
+        if (response.data.messages.length > initialMessageCount) {
+          return res.json({ result: response.data })
         }
-      })
-      .catch(function (error) {
-        console.error(error)
-        return res.json({
-          error: error.message
-        })
-      })
-  }, 1000)
+        setTimeout(pollForNewMessages, 1000)
+      } catch (error) {
+        handleAxiosError(error, res)
+      }
+    }
+
+    pollForNewMessages()
+  } catch (error) {
+    handleAxiosError(error, res)
+  }
 })
 
 app.get('/test', async (req: any, res: any) => {
