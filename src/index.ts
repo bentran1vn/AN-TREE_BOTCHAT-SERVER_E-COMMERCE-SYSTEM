@@ -5,6 +5,9 @@ import WebSocket from 'ws'
 import usersService from '~/services/userService'
 import EventSource from 'eventsource'
 import { BotPress } from '~/message.type'
+import { IncomingMessage } from 'http'
+import jwt from 'jsonwebtoken'
+import { CreateAxiosConfigFunction } from '~/utils'
 
 const WEBSOCKET_PORT = parseInt(process.env.WEBSOCKET_PORT as string)
 
@@ -41,7 +44,6 @@ const options = {
 const eventSource = new EventSource(url, options)
 
 eventSource.onmessage = (event) => {
-  console.log(event)
   try {
     const messageData: BotPress = JSON.parse(event.data)
 
@@ -57,7 +59,24 @@ eventSource.onmessage = (event) => {
   }
 }
 
-wsServer.on('connection', (ws: WebSocket) => {
+wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+  const url = new URL(req.url as string, `http://${req.headers.host}`)
+  const token = url.searchParams.get('token')
+
+  if (token == null) {
+    console.log('Token is Empty !')
+    ws.close()
+  }
+
+  try {
+    const decoded = jwt.verify(token as string, 'your_secret_key')
+    console.log('User authenticated', decoded)
+    // Proceed with the WebSocket connection
+  } catch (err) {
+    console.log('Invalid token !')
+    ws.close() // Close connection if token is invalid
+  }
+
   console.log('New WebSocket connection established.')
 
   ws.on('message', async (message) => {
@@ -84,13 +103,11 @@ wsServer.on('connection', (ws: WebSocket) => {
   })
 })
 
-const BASE_URL = process.env.BASE_URL
-const AUTH_TOKEN = process.env.AUTH_TOKEN
-const USER_KEY = process.env.USER_KEY
+const BASE_URL = process.env.BASE_URL as string
+const USER_KEY = process.env.USER_KEY as string
 
 const headers = {
   accept: 'application/json',
-  Authorization: AUTH_TOKEN,
   'x-user-key': USER_KEY,
   'content-type': 'application/json'
 }
@@ -101,6 +118,8 @@ const createAxiosConfig = (method: string, url: string, data?: any): AxiosReques
   headers,
   data
 })
+
+const createAxiosConfig11 = CreateAxiosConfigFunction(USER_KEY, BASE_URL)
 
 // 1 API Bắt đầu trò chuyện ( Cái này ko có JWT TOKEN)
 // Tạo User, và Tạo Conversation
