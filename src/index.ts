@@ -10,14 +10,14 @@ const WEBSOCKET_PORT = parseInt(process.env.WEBSOCKET_PORT as string)
 
 const app: Application = express()
 const wsServer = new WebSocket.Server({
-  port: WEBSOCKET_PORT // This is the port our websocket server will listen on
+  port: WEBSOCKET_PORT
 })
 
 sequelize
   .authenticate()
   .then(() => {
     console.log('Connected to the database.')
-    return sequelize.sync() // This creates the table if it doesn't exist
+    return sequelize.sync()
   })
   .then(() => {
     console.log('Database synchronized.')
