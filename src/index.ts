@@ -2,11 +2,12 @@ import express, { Request, Response, Application } from 'express'
 import axios, { AxiosRequestConfig } from 'axios'
 import { create } from 'lodash'
 import { createMessage } from '@botpress/chat/dist/gen/client'
-import { send } from 'process'
+import { env, send } from 'process'
 import http from 'http'
 import sequelize from '~/config/dbConfig'
 import WebSocket from 'ws'
 import usersService from '~/services/userService'
+import EventSource from 'eventsource'
 
 const app: Application = express()
 const wsServer = new WebSocket.Server({
@@ -32,6 +33,58 @@ const port = 9000
 // messId: "81aa9a45-5d8f-49d3-a274-27054fe27e6a"
 app.use(express.json())
 
+const url = 'https://chat.botpress.cloud/cc72f54c-2498-4da9-ab75-5a98365f7b06/conversations/Tan/listen'
+const options = {
+  method: 'GET',
+  headers: {
+    accept: 'application/json',
+    'x-user-key':
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlRhbiIsImlhdCI6MTcyODg5ODg4N30.FLRxlE97bKxdY5j2O8LuvlofTMJT3xWa-jrkcpudycc'
+  }
+}
+
+type Message = {
+  type: string
+  data: BotPress
+}
+
+type BotPress = {
+  type: string
+  data: {
+    id: string
+    userId: string
+    conversationId: string
+    isBot: boolean
+    createdAt: string
+    payload: {
+      type: string
+      text: string
+    }
+  }
+}
+
+const eventSource = new EventSource(url, options)
+
+eventSource.onmessage = (event) => {
+  // Parse event.data as it comes in as a JSON string
+  console.log(event)
+  try {
+    const messageData: BotPress = JSON.parse(event.data)
+
+    // Check if the parsed data contains bot-generated messages
+    if (messageData?.data?.isBot) {
+      wsServer.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          // Send the bot's response text to WebSocket clients
+          client.send(messageData?.data?.payload.text)
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to parse event data:', error)
+  }
+}
+
 wsServer.on('connection', (ws: WebSocket) => {
   console.log('New WebSocket connection established.')
 
@@ -39,7 +92,7 @@ wsServer.on('connection', (ws: WebSocket) => {
   ws.on('message', async (message) => {
     // Added async here
     var data = {
-      conversationId: 'Long',
+      conversationId: 'Tan',
       payload: {
         type: 'text',
         text: message.toString()
@@ -47,7 +100,7 @@ wsServer.on('connection', (ws: WebSocket) => {
     }
 
     // Handle Send Message to Chat box
-    console.log('Received Message:', data)
+    console.log('Received Message:', message.toString())
 
     // Function to delay for a specified time (in milliseconds)
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -56,7 +109,9 @@ wsServer.on('connection', (ws: WebSocket) => {
     await delay(2000) // 10 seconds = 10000 ms
 
     // Send back a message to the client after the delay
-    ws.send(`Server received: ${message.toString()}`)
+    await axios(createAxiosConfig('POST', '/messages', data))
+
+    // ws.send(`Server received: ${message.toString()}`)
   })
 
   // Handle WebSocket disconnections
@@ -88,33 +143,21 @@ const handleAxiosError = (error: any, res: Response) => {
   res.status(500).json({ error: error.message })
 }
 
-app.post('/chatAuto', async (req: Request, res: Response) => {
+app.post('/chat', async (req: Request, res: Response) => {
   try {
     // Send message
     await axios(createAxiosConfig('POST', '/messages', req.body))
-
-    // Get initial message count
-    const initialResponse = await axios(createAxiosConfig('GET', '/conversations/Long/messages'))
-    const initialMessageCount = initialResponse.data.messages.length
-
-    // Poll for new messages
-    const pollForNewMessages = async () => {
-      try {
-        const response = await axios(createAxiosConfig('GET', '/conversations/Long/messages'))
-        if (response.data.messages.length > initialMessageCount) {
-          return res.json({ result: response.data })
-        }
-        setTimeout(pollForNewMessages, 1000)
-      } catch (error) {
-        handleAxiosError(error, res)
-      }
-    }
-
-    pollForNewMessages()
   } catch (error) {
     handleAxiosError(error, res)
   }
 })
+
+// 1 API Bắt đầu trò chuyện ( Cái này ko có JWT TOKEN)
+// Tạo User, và Tạo Conversation
+// Sau đó nhét vào DB ( Redis )
+
+// ChatAuto WebSocket ( Cái này có JWT TOKEN )
+// Nếu mà có tin nhắn mới thì sẽ gửi về cho Client Botpress
 
 app.get('/test', async (req: any, res: any) => {
   try {

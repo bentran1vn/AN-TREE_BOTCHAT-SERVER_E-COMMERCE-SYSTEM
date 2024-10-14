@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/eventsource": "^1.1.15",
     "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.10",
     "@types/node": "^22.7.5",
@@ -39,6 +40,7 @@
     "@types/websocket": "^1.0.10",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "eventsource": "^2.0.2",
     "express": "^4.21.1",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2",
