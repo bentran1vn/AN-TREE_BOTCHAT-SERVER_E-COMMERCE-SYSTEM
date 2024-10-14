@@ -1,16 +1,14 @@
 # AN-TREE_BOTCHAT-SERVER_E-COMMERCE-SYSTEM
 
-# BOT CHAT AI TREE SUGGESTION FOR Promoting the System Purchases
+Welcome to the **AN-TREE_BOTCHAT-SERVER_E-COMMERCE-SYSTEM** project! This repository contains a powerful AI-driven bot system designed to promote Antree system purchases by engaging with users, analyzing their preferences, and providing tailored suggestions.
 
-Welcome to the **BOT CHAT AI Tree Suggestion** project! This repository contains a powerful AI-driven bot system designed to promote system purchases by engaging with users, analyzing their preferences, and providing tailored suggestions for promoting the Antree System Purchases.
-
-## Features
+## 1. Features
 
 - **AI-Powered Conversations**: Utilizes the BotPress platform to engage with users through intelligent, conversational flows.
 - **Recommendation Engine**: Suggests system purchases based on user input, preferences, and product data.
 - **Robust Backend**: Built using NodeJS and TypeScript with Sequelize for database management, supporting both MSSQL Server and Redis for data storage and caching.
 
-## TechStack
+## 2. TechStacks
 
 - **NodeJS**: The primary backend framework.
 - **TypeScript**: Provides type-safe development and improves code quality.
@@ -19,7 +17,7 @@ Welcome to the **BOT CHAT AI Tree Suggestion** project! This repository contains
 - **Redis**: In-memory database for fast caching and session storage.
 - **BotPress**: AI and conversational engine used for managing chat interactions.
 
-## Contributors
+## 3. Contributors
 
 We would like to extend our heartfelt thanks to all the members who contributed to the **AN-TREE_BOTCHAT-SERVER_E-COMMERCE-SYSTEM** project. Your hard work and dedication have been invaluable in bringing this project to life!
 
