@@ -10,7 +10,7 @@ Welcome to the **BOT CHAT AI Tree Suggestion** project! This repository contains
 - **Recommendation Engine**: Suggests system purchases based on user input, preferences, and product data.
 - **Robust Backend**: Built using NodeJS and TypeScript with Sequelize for database management, supporting both MSSQL Server and Redis for data storage and caching.
 
-## Technologies Used
+## TechStack
 
 - **NodeJS**: The primary backend framework.
 - **TypeScript**: Provides type-safe development and improves code quality.
@@ -19,7 +19,7 @@ Welcome to the **BOT CHAT AI Tree Suggestion** project! This repository contains
 - **Redis**: In-memory database for fast caching and session storage.
 - **BotPress**: AI and conversational engine used for managing chat interactions.
 
-## Thanks to All Contributors
+## Contributors
 
 We would like to extend our heartfelt thanks to all the members who contributed to the **AN-TREE_BOTCHAT-SERVER_E-COMMERCE-SYSTEM** project. Your hard work and dedication have been invaluable in bringing this project to life!
 
@@ -30,4 +30,7 @@ We would like to extend our heartfelt thanks to all the members who contributed 
 | Bui Cong Bang | [@CB.Bang](https://github.com/Buicongbang04) | AI/Chatbot Engineer |
 | Tran Ha Bao Long | [@BLonggg](https://github.com/BLonggg608) | AI/Chatbot Engineer |
 
+
 We truly appreciate all your contributions and hard work in making this project successful!
+
+#### © 2024 bentran1vn
