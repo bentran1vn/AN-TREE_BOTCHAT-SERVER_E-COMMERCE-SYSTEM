@@ -31,13 +31,13 @@ sequelize
 
 app.use(express.json())
 
-const url = 'https://chat.botpress.cloud/cc72f54c-2498-4da9-ab75-5a98365f7b06/conversations/Tan/listen'
+const url = 'https://chat.botpress.cloud/07c5064a-c698-44df-bfd5-487f180e6565/conversations/Tan/listen'
 const options = {
   method: 'GET',
   headers: {
     accept: 'application/json',
     'x-user-key':
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlRhbiIsImlhdCI6MTcyODg5ODg4N30.FLRxlE97bKxdY5j2O8LuvlofTMJT3xWa-jrkcpudycc'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlRhbiIsImlhdCI6MTcyOTA0MjQwMH0.kdFMM3RrsNPkjkJ-OH9N-F6Mm_jf1PR8bkb4eK1if8M'
   }
 }
 
@@ -143,6 +143,140 @@ app.get('/test', async (req: any, res: any) => {
     console.error('Error fetching user:', error)
     return res.status(500).json({ message: 'Internal server error' })
   }
+})
+
+app.post('/messAuto', async (req: Request, res: Response) => {
+  const { conversationId, payload } = req.body;
+  const createMess = {
+    method: 'POST',
+    url: `${BASE_URL}/messages`,
+    headers: {
+      accept: 'application/json',
+      'x-user-key': USER_KEY,
+      'content-type': 'application/json'
+    },
+    data: {
+      conversationId,
+      ...payload
+    }
+  };
+  
+  await axios
+    .request(createMess)
+    .then(function (response) {
+      console.log(response.data)
+      return res.json({
+        result: response.data
+      })
+    })
+    .catch(function (error) {
+      console.error(error)
+      return res.json({
+        error: error.message
+      })
+    });
+  })
+
+app.post('/user', async (req: Request, res: Response) => {
+  const createUser = {
+    method: 'POST',
+    url: `${BASE_URL}/users`,
+    headers: {accept: 'application/json', 'content-type': 'application/json'},
+    data: req.body
+  };
+  
+  await axios
+    .request(createUser)
+    .then(function (response) {
+      return res.json({
+        result: response.data
+      })
+
+    })
+    .catch(function (error) {
+      console.error(error);
+      return res.json({
+        error: error.message
+      })
+    });
+  })
+
+app.delete('/delUser', async (req: Request, res: Response) => {
+  const deleteUser = {
+    method: 'DELETE',
+    url: `${BASE_URL}/users/me`,
+    headers: {accept: 'application/json', 'x-user-key': USER_KEY,'content-type': 'application/json'}
+  };
+  await axios
+    .request(deleteUser)
+    .then(function (response) {
+      return res.json({
+        message: "Đã xóa thành công",
+        result: response.data
+      });
+    })
+    .catch(function (error) {
+      return res.json({
+        message: "xóa không thành công",
+        error: error.message
+      })
+    });
+})
+
+app.post('/conversationAuto', async (req: Request, res: Response) => {
+  // Gọi API createConversation
+  try {
+  const conversationResponse = await axios.request({
+    method: 'POST',
+    url: `${BASE_URL}/conversations/get-or-create`,
+    headers: {
+      accept: 'application/json',
+      'x-user-key': USER_KEY,
+      'content-type': 'application/json'
+    },
+    data: req.body
+  });
+  const sayHi = { type: 'text', text: 'hi' }
+  const conversationId = conversationResponse.data.conversation.id;
+  const payload = {
+    payload: sayHi
+  };
+  // return res.redirect(`/messAuto?conversationId=${conversationId}&payload=${payload}`);
+  await axios.post(`http://localhost:${HTTP_PORT}/messAuto`, {
+    conversationId: conversationId,
+    payload: payload                
+  }).then(function (response) {
+    return res.json({
+      result: response.data
+    })
+  });
+
+} catch (error) {
+  console.error("Error:", error);
+  res.status(500).send("Internal Server Error");
+}
+});
+
+app.delete('/delCon', async (req: Request, res: Response) => {
+const listConversation = {
+  method: 'DELETE',
+  url: `${BASE_URL}/conversations/Tan`,
+  headers: {accept: 'application/json', 'x-user-key': USER_KEY,'content-type': 'application/json'},
+};
+await axios
+  .request(listConversation)
+  .then(function (response) {
+    return res.json({
+      message: "Đã xóa thành công",
+      result: response.data
+    });
+  })
+  .catch(function (error) {
+    return res.json({
+      message: "xóa không thành công",
+      error: error.message
+    })
+  });
 })
 
 app.listen(HTTP_PORT, () => {
