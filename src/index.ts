@@ -69,7 +69,10 @@ wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
   }
 
   try {
-    const decoded = jwt.verify(token as string, 'your_secret_key')
+    const decoded = jwt.verify(token as string, process.env.SECRETKEY as string, {
+      issuer: process.env.ISSUER,
+      audience: process.env.AUDIENCE
+    })
     console.log('User authenticated', decoded)
     // Proceed with the WebSocket connection
   } catch (err) {
@@ -146,7 +149,7 @@ app.get('/test', async (req: any, res: any) => {
 })
 
 app.post('/messAuto', async (req: Request, res: Response) => {
-  const { conversationId, payload } = req.body;
+  const { conversationId, payload } = req.body
   const createMess = {
     method: 'POST',
     url: `${BASE_URL}/messages`,
@@ -159,8 +162,8 @@ app.post('/messAuto', async (req: Request, res: Response) => {
       conversationId,
       ...payload
     }
-  };
-  
+  }
+
   await axios
     .request(createMess)
     .then(function (response) {
@@ -174,109 +177,109 @@ app.post('/messAuto', async (req: Request, res: Response) => {
       return res.json({
         error: error.message
       })
-    });
-  })
+    })
+})
 
 app.post('/user', async (req: Request, res: Response) => {
   const createUser = {
     method: 'POST',
     url: `${BASE_URL}/users`,
-    headers: {accept: 'application/json', 'content-type': 'application/json'},
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
     data: req.body
-  };
-  
+  }
+
   await axios
     .request(createUser)
     .then(function (response) {
       return res.json({
         result: response.data
       })
-
     })
     .catch(function (error) {
-      console.error(error);
+      console.error(error)
       return res.json({
         error: error.message
       })
-    });
-  })
+    })
+})
 
 app.delete('/delUser', async (req: Request, res: Response) => {
   const deleteUser = {
     method: 'DELETE',
     url: `${BASE_URL}/users/me`,
-    headers: {accept: 'application/json', 'x-user-key': USER_KEY,'content-type': 'application/json'}
-  };
+    headers: { accept: 'application/json', 'x-user-key': USER_KEY, 'content-type': 'application/json' }
+  }
   await axios
     .request(deleteUser)
     .then(function (response) {
       return res.json({
-        message: "Đã xóa thành công",
+        message: 'Đã xóa thành công',
         result: response.data
-      });
+      })
     })
     .catch(function (error) {
       return res.json({
-        message: "xóa không thành công",
+        message: 'xóa không thành công',
         error: error.message
       })
-    });
+    })
 })
 
 app.post('/conversationAuto', async (req: Request, res: Response) => {
   // Gọi API createConversation
   try {
-  const conversationResponse = await axios.request({
-    method: 'POST',
-    url: `${BASE_URL}/conversations/get-or-create`,
-    headers: {
-      accept: 'application/json',
-      'x-user-key': USER_KEY,
-      'content-type': 'application/json'
-    },
-    data: req.body
-  });
-  const sayHi = { type: 'text', text: 'hi' }
-  const conversationId = conversationResponse.data.conversation.id;
-  const payload = {
-    payload: sayHi
-  };
-  // return res.redirect(`/messAuto?conversationId=${conversationId}&payload=${payload}`);
-  await axios.post(`http://localhost:${HTTP_PORT}/messAuto`, {
-    conversationId: conversationId,
-    payload: payload                
-  }).then(function (response) {
-    return res.json({
-      result: response.data
+    const conversationResponse = await axios.request({
+      method: 'POST',
+      url: `${BASE_URL}/conversations/get-or-create`,
+      headers: {
+        accept: 'application/json',
+        'x-user-key': USER_KEY,
+        'content-type': 'application/json'
+      },
+      data: req.body
     })
-  });
-
-} catch (error) {
-  console.error("Error:", error);
-  res.status(500).send("Internal Server Error");
-}
-});
+    const sayHi = { type: 'text', text: 'hi' }
+    const conversationId = conversationResponse.data.conversation.id
+    const payload = {
+      payload: sayHi
+    }
+    // return res.redirect(`/messAuto?conversationId=${conversationId}&payload=${payload}`);
+    await axios
+      .post(`http://localhost:${HTTP_PORT}/messAuto`, {
+        conversationId: conversationId,
+        payload: payload
+      })
+      .then(function (response) {
+        return res.json({
+          result: response.data
+        })
+      })
+  } catch (error) {
+    console.error('Error:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
 
 app.delete('/delCon', async (req: Request, res: Response) => {
-const listConversation = {
-  method: 'DELETE',
-  url: `${BASE_URL}/conversations/Tan`,
-  headers: {accept: 'application/json', 'x-user-key': USER_KEY,'content-type': 'application/json'},
-};
-await axios
-  .request(listConversation)
-  .then(function (response) {
-    return res.json({
-      message: "Đã xóa thành công",
-      result: response.data
-    });
-  })
-  .catch(function (error) {
-    return res.json({
-      message: "xóa không thành công",
-      error: error.message
+  const listConversation = {
+    method: 'DELETE',
+    url: `${BASE_URL}/conversations/Tan`,
+    headers: { accept: 'application/json', 'x-user-key': USER_KEY, 'content-type': 'application/json' }
+  }
+  await axios
+    .request(listConversation)
+    .then(function (response) {
+      return res.json({
+        message: 'Đã xóa thành công',
+        result: response.data
+      })
     })
-  });
+    .catch(function (error) {
+      return res.json({
+        message: 'xóa không thành công',
+        error: error.message
+      })
+    })
 })
 
 app.listen(HTTP_PORT, () => {
