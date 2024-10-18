@@ -2,7 +2,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos
 
 ### project ###
-.env
 node_modules
 
 ### macOS ###
