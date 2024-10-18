@@ -91,14 +91,16 @@ wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
       }
     }
 
-    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-    await delay(2000) // 10 seconds = 10000 ms
+    // const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+    // await delay(2000) // 10 seconds = 10000 ms
 
-    try {
-      await axios(createAxiosConfig('POST', '/messages', data))
-    } catch (error) {
-      console.error('Error sending message:', error)
-    }
+    // try {
+    //   await axios(createAxiosConfig('POST', '/messages', data))
+    // } catch (error) {
+    //   console.error('Error sending message:', error)
+    // }
+
+    ws.send('Message gì đó')
   })
 
   ws.on('close', () => {
