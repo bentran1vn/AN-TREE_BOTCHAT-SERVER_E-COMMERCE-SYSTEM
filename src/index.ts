@@ -69,7 +69,7 @@ wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
   }
 
   try {
-    const decoded = jwt.verify(token as string, 'your_secret_key')
+    const decoded = jwt.verify(token as string, 'IRanUIwukUBzSauFsZnr7AjV7XS96sun')
     console.log('User authenticated', decoded)
     // Proceed with the WebSocket connection
   } catch (err) {
