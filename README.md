@@ -31,4 +31,4 @@ We would like to extend our heartfelt thanks to all the members who contributed 
 
 We truly appreciate all your contributions and hard work in making this project successful!
 
-#### © 2024 bentran1vn
+#### © 2024 bentran1vn.
