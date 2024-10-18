@@ -1,0 +1,63 @@
+name: CI/CD Pipeline for NodeJS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Python
+        run: sudo apt-get install -y python3 python3-pip
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build the App
+        run: npm run build
+
+      - name: Build Docker Image
+        run: docker build -t myapp-node:latest .
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    env:
+      CONTAINER_NAME: myappNodeContainer
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Server
+        run: |
+          CNAME=${{ env.CONTAINER_NAME }}
+          # Check if the container exists
+          if [ "$(docker ps -aq -f name=$CNAME)" ]; then
+              if [ "$(docker ps -aq -f status=exited -f name=$CNAME)" ]; then
+                  echo ":: Container $CNAME exists and is exited"
+                  echo ":: Removing exited container - $CNAME"
+                  docker rm $CNAME
+              else
+                  echo ":: Container $CNAME exists and is running"
+                  echo ":: Stopping running container - $CNAME"
+                  docker stop $CNAME
+                  echo ":: Removing stopped container - $CNAME"
+              fi
+          else
+              echo ":: No existing container named $CNAME"
+          fi
+          # Run new container
+          echo ":: Running new container - $CNAME"
+          docker run -d --network=my_network -p 9000:9000 -p 9001:9001 --name $CNAME myapp-node:latest
+
+      - name: Notify Deployment
+        run: echo "Deployment completed successfully!"
