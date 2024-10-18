@@ -57,7 +57,7 @@ jobs:
           fi
           # Run new container
           echo ":: Running new container - $CNAME"
-          docker run -d --network=my_network -p 9000:9000 -p 9001:9001 --name $CNAME myapp-node:latest
+          docker run -d -p 9000:9000 -p 9001:9001 --name $CNAME myapp-node:latest
 
       - name: Notify Deployment
         run: echo "Deployment completed successfully!"
