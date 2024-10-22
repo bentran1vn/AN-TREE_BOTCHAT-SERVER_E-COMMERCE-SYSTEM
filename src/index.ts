@@ -37,7 +37,7 @@ const options = {
   headers: {
     accept: 'application/json',
     'x-user-key':
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlRhbiIsImlhdCI6MTcyOTA0MjQwMH0.kdFMM3RrsNPkjkJ-OH9N-F6Mm_jf1PR8bkb4eK1if8M'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlRhbiIsImlhdCI6MTcyOTA2MTM1OH0.VRF1g2PueggAkWXYXxlb8kzBrs2B9EYHsve7AsIThzQ'
   }
 }
 
@@ -68,12 +68,14 @@ wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
     ws.close()
   }
 
+  var decoded = {}
+
   try {
-    const decoded = jwt.verify(token as string, process.env.SECRETKEY as string, {
+    decoded = jwt.verify(token as string, process.env.SECRETKEY as string, {
       issuer: process.env.ISSUER,
       audience: process.env.AUDIENCE
     })
-    console.log('User authenticated', decoded)
+    // console.log('User authenticated', decoded)
     // Proceed with the WebSocket connection
   } catch (err) {
     console.log('Invalid token !')
@@ -91,16 +93,18 @@ wsServer.on('connection', (ws: WebSocket, req: IncomingMessage) => {
       }
     }
 
-    // const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-    // await delay(2000) // 10 seconds = 10000 ms
+    var time = 10000 - (decoded as any).Wait * 1000
+    console.log(time)
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+    await delay(time) // 10 seconds = 10000 ms
 
-    // try {
-    //   await axios(createAxiosConfig('POST', '/messages', data))
-    // } catch (error) {
-    //   console.error('Error sending message:', error)
-    // }
+    try {
+      await axios(createAxiosConfig('POST', '/messages', data))
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
 
-    ws.send('Message gì đó')
+    // ws.send('Message gì đó')
   })
 
   ws.on('close', () => {
@@ -186,8 +190,7 @@ app.post('/user', async (req: Request, res: Response) => {
   const createUser = {
     method: 'POST',
     url: `${BASE_URL}/users`,
-    headers: { accept: 'application/json', 'content-type': 'application/json' },
-    data: req.body
+    headers: { accept: 'application/json', 'content-type': 'application/json' }
   }
 
   await axios
